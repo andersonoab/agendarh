@@ -1,0 +1,1310 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Calendário Operacional RH</title>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <style>
+    :root {
+      --navy: #121C4E;
+      --navy-2: #1B2A6B;
+      --navy-3: #2F4AA0;
+      --navy-4: #3D5BC7;
+
+      --orange: #F59E42;
+      --orange-soft: #FFF4E8;
+      --orange-soft-2: #FFF8F1;
+      --orange-line: #F7C38D;
+      --orange-text: #9A5A1B;
+
+      --blue-soft: #EAF2FF;
+      --blue-soft-2: #F4F8FF;
+
+      --bg: #F5F7FB;
+      --bg-2: #EEF3FA;
+      --card: #FFFFFF;
+      --line: #D9E2F1;
+      --line-strong: #C7D4EA;
+
+      --text: #1E293B;
+      --text-2: #475569;
+      --text-3: #64748B;
+
+      --shadow-sm: 0 4px 10px rgba(18, 28, 78, 0.05);
+      --shadow-md: 0 10px 24px rgba(18, 28, 78, 0.10);
+      --shadow-lg: 0 16px 36px rgba(18, 28, 78, 0.14);
+
+      --radius-xs: 10px;
+      --radius-sm: 12px;
+      --radius-md: 16px;
+      --radius-lg: 18px;
+      --radius-xl: 20px;
+
+      --todo: #E9EDF3;
+      --doing: #FFF4CC;
+      --done: #DDF4E4;
+      --late: #FBE1E5;
+
+      --payday-bg: #E8F1FF;
+      --payday-line: #7AA7F8;
+      --payday-header: #D9E8FF;
+      --payday-text: #163E8C;
+
+      --focus: 0 0 0 3px rgba(47, 74, 160, 0.16);
+      --transition: all 0.22s ease;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: radial-gradient(circle at top left, #ffffff 0%, var(--bg) 42%, var(--bg-2) 100%);
+      color: var(--text);
+      line-height: 1.4;
+    }
+
+    button, .file-label, select, input, textarea {
+      font: inherit;
+    }
+
+    button,
+    .file-label,
+    input,
+    select,
+    textarea,
+    .summary-card,
+    .day,
+    .task,
+    .modal {
+      transition: var(--transition);
+    }
+
+    .topbar {
+      background: linear-gradient(90deg, var(--navy), var(--navy-2));
+      color: #fff;
+      padding: 18px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      box-shadow: var(--shadow-md);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .topbar h1 {
+      margin: 0;
+      font-size: 24px;
+      font-weight: 800;
+      letter-spacing: 0.2px;
+    }
+
+    .topbar small {
+      display: block;
+      margin-top: 4px;
+      opacity: 0.92;
+      font-size: 13px;
+    }
+
+    .toolbar {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    button, .file-label {
+      border: 1px solid transparent;
+      border-radius: var(--radius-sm);
+      padding: 10px 14px;
+      cursor: pointer;
+      font-weight: 700;
+      background: var(--navy);
+      color: #fff;
+      box-shadow: 0 2px 8px rgba(18, 28, 78, 0.10);
+    }
+
+    button:hover, .file-label:hover {
+      background: var(--navy-2);
+      transform: translateY(-1px);
+      box-shadow: 0 8px 18px rgba(18, 28, 78, 0.14);
+    }
+
+    button:active, .file-label:active {
+      transform: translateY(0);
+    }
+
+    button:focus-visible,
+    .file-label:focus-visible,
+    input:focus-visible,
+    select:focus-visible,
+    textarea:focus-visible {
+      outline: none;
+      box-shadow: var(--focus);
+    }
+
+    input[type="file"] {
+      display: none;
+    }
+
+    .container {
+      max-width: 1650px;
+      margin: 0 auto;
+      padding: 20px 18px 28px;
+    }
+
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(130px, 1fr));
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .summary-card {
+      background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .summary-card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+      border-color: var(--line-strong);
+    }
+
+    .summary-card .label {
+      font-size: 11px;
+      text-transform: uppercase;
+      color: var(--text-3);
+      font-weight: 800;
+      margin-bottom: 8px;
+      letter-spacing: 0.5px;
+    }
+
+    .summary-card .value {
+      font-size: 28px;
+      font-weight: 800;
+      color: var(--navy);
+      line-height: 1;
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr 1fr 1fr auto auto auto;
+      gap: 10px;
+      margin-bottom: 18px;
+      align-items: center;
+    }
+
+    .controls input,
+    .controls select,
+    .field input,
+    .field select,
+    .field textarea {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-sm);
+      padding: 11px 12px;
+      background: #fff;
+      color: var(--text);
+      box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.02);
+    }
+
+    .controls input:hover,
+    .controls select:hover,
+    .field input:hover,
+    .field select:hover,
+    .field textarea:hover {
+      border-color: var(--line-strong);
+    }
+
+    .controls input:focus,
+    .controls select:focus,
+    .field input:focus,
+    .field select:focus,
+    .field textarea:focus {
+      border-color: var(--navy-3);
+      background: #fff;
+      outline: none;
+    }
+
+    .calendar-toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+    }
+
+    .month-title {
+      margin: 0;
+      color: var(--navy);
+      text-transform: capitalize;
+      font-size: 26px;
+      font-weight: 800;
+      letter-spacing: 0.2px;
+    }
+
+    .calendar-toolbar > div {
+      color: var(--text-3);
+      font-weight: 700;
+      font-size: 13px;
+    }
+
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 10px;
+    }
+
+    .weekday {
+      background: linear-gradient(180deg, #f9fbff 0%, #f2f6fd 100%);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-sm);
+      padding: 11px 10px;
+      text-align: center;
+      font-weight: 800;
+      color: var(--navy);
+      box-shadow: 0 2px 6px rgba(18, 28, 78, 0.03);
+    }
+
+    .weekday.weekend {
+      background: linear-gradient(180deg, #fff3e6 0%, #ffe9d3 100%);
+      border-color: var(--orange-line);
+      color: var(--orange-text);
+    }
+
+    .day {
+      background: linear-gradient(180deg, #ffffff 0%, #fcfdff 100%);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-md);
+      min-height: 220px;
+      display: flex;
+      flex-direction: column;
+      box-shadow: var(--shadow-sm);
+      overflow: hidden;
+    }
+
+    .day:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+      border-color: var(--line-strong);
+    }
+
+    .day.empty {
+      background: linear-gradient(180deg, #f8fbff 0%, #f3f7fc 100%);
+      opacity: 0.65;
+      min-height: 220px;
+    }
+
+    .day.today {
+      border-color: var(--navy-3);
+      box-shadow: 0 0 0 2px rgba(47, 74, 160, 0.14), var(--shadow-sm);
+    }
+
+    .day.weekend {
+      background: linear-gradient(180deg, #fffaf5 0%, #fff5ec 100%);
+      border-color: var(--orange-line);
+    }
+
+    .day.payday {
+      background: linear-gradient(180deg, var(--payday-bg) 0%, #F7FAFF 100%);
+      border-color: var(--payday-line);
+    }
+
+    .day.payday .day-header {
+      background: var(--payday-header);
+      color: var(--payday-text);
+    }
+
+    .day.payday .day-count {
+      background: #FFFFFF;
+      color: var(--payday-text);
+      border-color: var(--payday-line);
+    }
+
+    .day-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 12px 8px;
+      color: var(--navy);
+      font-weight: 800;
+      border-bottom: 1px solid rgba(217, 226, 241, 0.65);
+      background: rgba(255, 255, 255, 0.65);
+      backdrop-filter: blur(4px);
+    }
+
+    .day-count {
+      background: var(--blue-soft);
+      color: var(--navy);
+      border: 1px solid #d9e7ff;
+      border-radius: 999px;
+      padding: 3px 8px;
+      font-size: 11px;
+      font-weight: 800;
+      min-width: 28px;
+      text-align: center;
+    }
+
+    .day-body {
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    .task-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      min-height: 60px;
+      max-height: 250px;
+      overflow: auto;
+      padding-right: 2px;
+    }
+
+    .task-list::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    .task-list::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 999px;
+    }
+
+    .task-list::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .task {
+      border-radius: var(--radius-xs);
+      border: 1px solid var(--line);
+      padding: 8px 9px;
+      font-size: 12px;
+      line-height: 1.4;
+      cursor: pointer;
+      white-space: normal;
+      word-break: break-word;
+      box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+    }
+
+    .task:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 12px rgba(15, 23, 42, 0.08);
+      border-color: #bfd0ea;
+    }
+
+    .task strong {
+      display: inline-block;
+      margin-bottom: 2px;
+      color: #0f172a;
+    }
+
+    .task.todo { background: var(--todo); }
+    .task.doing { background: var(--doing); }
+    .task.done { background: var(--done); }
+    .task.late { background: var(--late); }
+
+    .task .badge-payday {
+      display: inline-block;
+      margin-top: 4px;
+      padding: 2px 6px;
+      border-radius: 999px;
+      background: #DBEAFE;
+      color: #1D4ED8;
+      font-size: 10px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+
+    .mini-actions {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-top: auto;
+      padding-top: 4px;
+    }
+
+    .mini-actions button {
+      padding: 7px 9px;
+      font-size: 12px;
+      border-radius: 10px;
+      background: #eef4ff;
+      color: var(--navy);
+      border: 1px solid #d9e2f1;
+      box-shadow: none;
+    }
+
+    .mini-actions button:hover {
+      background: #e2ecff;
+      color: var(--navy);
+      border-color: #bfd0ea;
+    }
+
+    .empty-text {
+      color: var(--text-3);
+      font-size: 12px;
+      text-align: center;
+      padding: 12px 0;
+    }
+
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.48);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      padding: 16px;
+      backdrop-filter: blur(4px);
+    }
+
+    .modal-backdrop.show {
+      display: flex;
+    }
+
+    .modal {
+      width: min(760px, 100%);
+      background: #fff;
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-lg);
+      overflow: hidden;
+      border: 1px solid var(--line);
+    }
+
+    .modal.modal-small {
+      width: min(520px, 100%);
+    }
+
+    .modal-header {
+      background: linear-gradient(90deg, var(--navy), var(--navy-2));
+      color: #fff;
+      padding: 16px 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .modal-header h2 {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 800;
+    }
+
+    .modal-body {
+      padding: 18px;
+      display: grid;
+      gap: 12px;
+      background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .field label {
+      display: block;
+      font-size: 11px;
+      font-weight: 800;
+      margin-bottom: 6px;
+      color: var(--text-3);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .field textarea {
+      min-height: 120px;
+      resize: vertical;
+      white-space: pre-wrap;
+      line-height: 1.45;
+    }
+
+    .checkbox-linha {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      color: var(--text);
+      text-transform: none;
+      font-weight: 600;
+    }
+
+    .checkbox-linha input[type="checkbox"] {
+      width: auto;
+      margin: 0;
+      box-shadow: none;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      padding-top: 4px;
+    }
+
+    .footer-note {
+      margin-top: 18px;
+      font-size: 12px;
+      color: var(--text-3);
+      text-align: right;
+    }
+
+    @media (max-width: 1400px) {
+      .calendar-grid {
+        grid-template-columns: repeat(4, 1fr);
+      }
+    }
+
+    @media (max-width: 1200px) {
+      .controls {
+        grid-template-columns: 1fr 1fr 1fr;
+      }
+
+      .summary {
+        grid-template-columns: repeat(3, minmax(130px, 1fr));
+      }
+    }
+
+    @media (max-width: 900px) {
+      .calendar-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .topbar {
+        align-items: stretch;
+      }
+
+      .topbar h1 {
+        font-size: 22px;
+      }
+    }
+
+    @media (max-width: 700px) {
+      .calendar-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .summary {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .grid-2,
+      .controls {
+        grid-template-columns: 1fr;
+      }
+
+      .container {
+        padding: 16px 14px 24px;
+      }
+
+      .topbar {
+        padding: 16px;
+      }
+
+      .month-title {
+        font-size: 22px;
+      }
+
+      .day {
+        min-height: 180px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <div>
+      <h1>Calendário Operacional RH</h1>
+      <small>Uma única página para escrever, visualizar e editar as atividades do mês</small>
+    </div>
+    <div class="toolbar">
+      <label class="file-label" for="inputImportarJson">Importar JSON</label>
+      <input id="inputImportarJson" type="file" accept=".json" />
+      <button type="button" onclick="exportarJSON()">Exportar JSON</button>
+      <button type="button" onclick="exportarExcel()">Exportar Excel</button>
+      <button type="button" onclick="ajustarDatasParaDiasUteis()">Dias úteis</button>
+      <button type="button" onclick="resetarStatuses()">Resetar status</button>
+      <button type="button" onclick="enviarAtividadesConcluidasParaMesSeguinte()">Enviar concluídas p/ mês seguinte</button>
+      <button type="button" onclick="abrirModalMoverDia()">Mover dia</button>
+      <button type="button" onclick="limparTudo()">Limpar tudo</button>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="summary" id="summary"></div>
+
+    <div class="controls">
+      <input id="filtroBusca" type="text" placeholder="Buscar atividade, responsável, observação..." oninput="renderizarCalendario()" />
+      <select id="filtroResponsavel" onchange="renderizarCalendario()"></select>
+      <select id="filtroStatus" onchange="renderizarCalendario()"></select>
+      <input id="responsavelMassa" type="text" placeholder="Responsável em massa" />
+      <button type="button" onclick="aplicarResponsavelEmMassa()">Aplicar responsável</button>
+      <button type="button" onclick="mudarMes(-1)">Mês anterior</button>
+      <button type="button" onclick="mudarMes(1)">Próximo mês</button>
+    </div>
+
+    <div class="calendar-toolbar">
+      <h2 class="month-title" id="monthTitle"></h2>
+      <div>Clique no dia para criar. Clique na atividade para editar.</div>
+    </div>
+
+    <div class="calendar-grid" id="calendarGrid"></div>
+
+    <div class="footer-note">Anderson Marinho | Igarapé Digital</div>
+  </div>
+
+  <div class="modal-backdrop" id="modalBackdrop">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 id="modalTitle">Nova atividade</h2>
+        <button type="button" onclick="fecharModal()">Fechar</button>
+      </div>
+      <div class="modal-body">
+        <div class="grid-2">
+          <div class="field">
+            <label>Data</label>
+            <input id="formData" type="date" />
+          </div>
+          <div class="field">
+            <label>Status</label>
+            <select id="formStatus">
+              <option value="todo">A Fazer</option>
+              <option value="doing">Em andamento</option>
+              <option value="done">Concluído</option>
+              <option value="late">Atrasado</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Atividade</label>
+          <input id="formTitulo" type="text" placeholder="Ex.: Conferir fechamento de ponto" />
+        </div>
+
+        <div class="grid-2">
+          <div class="field">
+            <label>Responsável</label>
+            <input id="formResponsavel" type="text" placeholder="Quem fará" />
+          </div>
+          <div class="field">
+            <label>Categoria</label>
+            <input id="formCategoria" type="text" placeholder="Folha, Benefícios, SST..." />
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Observações</label>
+          <textarea id="formObservacoes" placeholder="Detalhes da rotina, lembrete, pendência..."></textarea>
+        </div>
+
+        <div class="field">
+          <label>Marcação</label>
+          <label class="checkbox-linha">
+            <input id="formPagamento" type="checkbox" />
+            Marcar este dia como pagamento
+          </label>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" onclick="moverParaProximoDia()">Próximo dia</button>
+          <button type="button" onclick="moverParaMesSeguinte()">Próximo mês</button>
+          <button type="button" onclick="duplicarAtividade()">Duplicar</button>
+          <button type="button" onclick="excluirAtividadeAtual()">Excluir</button>
+          <button type="button" onclick="salvarAtividade()">Salvar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="modalMoverDiaBackdrop">
+    <div class="modal modal-small">
+      <div class="modal-header">
+        <h2>Mover todas de um dia</h2>
+        <button type="button" onclick="fecharModalMoverDia()">Fechar</button>
+      </div>
+      <div class="modal-body">
+        <div class="field">
+          <label>Dia de origem</label>
+          <input id="moverDiaOrigem" type="date" />
+        </div>
+
+        <div class="field">
+          <label>Dia de destino</label>
+          <input id="moverDiaDestino" type="date" />
+        </div>
+
+        <div class="field">
+          <label class="checkbox-linha">
+            <input id="moverDiaAjustarUtil" type="checkbox" checked />
+            Ajustar destino para próximo dia útil
+          </label>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" onclick="executarMoverDiaParaDataEscolhida()">Mover atividades</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const STORAGE_KEY = 'calendario_operacional_rh_v1';
+    let atividades = [];
+    let mesAtual = new Date().getMonth();
+    let anoAtual = new Date().getFullYear();
+    let editandoId = null;
+
+    function uid() {
+      return 'ATV-' + Date.now() + '-' + Math.floor(Math.random() * 100000);
+    }
+
+    function toIso(dateObj) {
+      return new Date(dateObj.getTime() - dateObj.getTimezoneOffset() * 60000).toISOString().split('T')[0];
+    }
+
+    function hojeIso() {
+      return toIso(new Date());
+    }
+
+    function escapeHtml(txt) {
+      return String(txt || '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#039;');
+    }
+
+    function carregarStorage() {
+      const salvo = localStorage.getItem(STORAGE_KEY);
+      if (salvo) {
+        try {
+          atividades = JSON.parse(salvo);
+          if (!Array.isArray(atividades)) atividades = [];
+        } catch {
+          atividades = [];
+        }
+      }
+    }
+
+    function salvarStorage() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(atividades));
+    }
+
+    function normalizarImportacao(item, indice) {
+      const status = item.status === 'A Fazer' ? 'todo'
+        : item.status === 'Em Andamento' ? 'doing'
+        : item.status === 'Concluído' ? 'done'
+        : item.status === 'Atrasado' ? 'late'
+        : (item.status || 'todo');
+
+      return {
+        id: item.id || ('IMP-' + Date.now() + '-' + indice),
+        data: item.data || item.prazo || hojeIso(),
+        titulo: item.titulo || item.atividade || 'Atividade sem nome',
+        responsavel: item.responsavel || '',
+        categoria: item.categoria || item.macroprocesso || '',
+        observacoes: item.observacoes || item.risco || item.evidencia || '',
+        status: ['todo', 'doing', 'done', 'late'].includes(status) ? status : 'todo',
+        pagamento: !!item.pagamento,
+        criadoEm: item.criadoEm || new Date().toISOString()
+      };
+    }
+
+    function popularFiltros() {
+      const responsaveis = [...new Set(atividades.map(a => a.responsavel).filter(Boolean))].sort((a,b) => a.localeCompare(b, 'pt-BR'));
+      preencherSelect('filtroResponsavel', [''].concat(responsaveis), 'Todos os responsáveis');
+      preencherSelect('filtroStatus', ['', 'todo', 'doing', 'done', 'late'], 'Todos os status', {
+        'todo': 'A Fazer',
+        'doing': 'Em andamento',
+        'done': 'Concluído',
+        'late': 'Atrasado'
+      });
+    }
+
+    function preencherSelect(id, valores, primeiroTexto, mapa = {}) {
+      const sel = document.getElementById(id);
+      const atual = sel.value;
+      sel.innerHTML = '';
+      valores.forEach((v, i) => {
+        const op = document.createElement('option');
+        op.value = v;
+        op.textContent = i === 0 ? primeiroTexto : (mapa[v] || v);
+        sel.appendChild(op);
+      });
+      sel.value = valores.includes(atual) ? atual : '';
+    }
+
+    function statusLabel(status) {
+      if (status === 'todo') return 'A Fazer';
+      if (status === 'doing') return 'Em andamento';
+      if (status === 'done') return 'Concluído';
+      if (status === 'late') return 'Atrasado';
+      return status;
+    }
+
+    function atualizarResumo() {
+      const cards = [
+        ['Total', atividades.length],
+        ['A Fazer', atividades.filter(a => a.status === 'todo').length],
+        ['Em andamento', atividades.filter(a => a.status === 'doing').length],
+        ['Concluído', atividades.filter(a => a.status === 'done').length],
+        ['Atrasado', atividades.filter(a => a.status === 'late').length]
+      ];
+
+      document.getElementById('summary').innerHTML = cards.map(([label, value]) => `
+        <div class="summary-card">
+          <div class="label">${label}</div>
+          <div class="value">${value}</div>
+        </div>
+      `).join('');
+    }
+
+    function filtrarAtividades() {
+      const busca = document.getElementById('filtroBusca').value.trim().toLowerCase();
+      const responsavel = document.getElementById('filtroResponsavel').value;
+      const status = document.getElementById('filtroStatus').value;
+
+      return atividades.filter(a => {
+        const texto = [a.titulo, a.responsavel, a.categoria, a.observacoes].join(' ').toLowerCase();
+        return (!busca || texto.includes(busca)) &&
+               (!responsavel || a.responsavel === responsavel) &&
+               (!status || a.status === status);
+      });
+    }
+
+    function mudarMes(delta) {
+      mesAtual += delta;
+      if (mesAtual < 0) {
+        mesAtual = 11;
+        anoAtual -= 1;
+      }
+      if (mesAtual > 11) {
+        mesAtual = 0;
+        anoAtual += 1;
+      }
+      renderizarCalendario();
+    }
+
+    function abrirModal(data = hojeIso(), id = null) {
+      editandoId = id;
+      const modal = document.getElementById('modalBackdrop');
+      const atividade = id ? atividades.find(a => a.id === id) : null;
+
+      document.getElementById('modalTitle').textContent = atividade ? 'Editar atividade' : 'Nova atividade';
+      document.getElementById('formData').value = atividade ? atividade.data : data;
+      document.getElementById('formTitulo').value = atividade ? atividade.titulo : '';
+      document.getElementById('formResponsavel').value = atividade ? atividade.responsavel : '';
+      document.getElementById('formCategoria').value = atividade ? atividade.categoria : '';
+      document.getElementById('formObservacoes').value = atividade ? atividade.observacoes : '';
+      document.getElementById('formStatus').value = atividade ? atividade.status : 'todo';
+      document.getElementById('formPagamento').checked = atividade ? !!atividade.pagamento : false;
+
+      modal.classList.add('show');
+      setTimeout(() => document.getElementById('formTitulo').focus(), 50);
+    }
+
+    function fecharModal() {
+      editandoId = null;
+      document.getElementById('modalBackdrop').classList.remove('show');
+    }
+
+    function abrirModalMoverDia() {
+      const dtBase = toIso(new Date(anoAtual, mesAtual, 1));
+      document.getElementById('moverDiaOrigem').value = dtBase;
+      document.getElementById('moverDiaDestino').value = dtBase;
+      document.getElementById('moverDiaAjustarUtil').checked = true;
+      document.getElementById('modalMoverDiaBackdrop').classList.add('show');
+    }
+
+    function fecharModalMoverDia() {
+      document.getElementById('modalMoverDiaBackdrop').classList.remove('show');
+    }
+
+    function salvarAtividade() {
+      const item = {
+        id: editandoId || uid(),
+        data: document.getElementById('formData').value,
+        titulo: document.getElementById('formTitulo').value.trim(),
+        responsavel: document.getElementById('formResponsavel').value.trim(),
+        categoria: document.getElementById('formCategoria').value.trim(),
+        observacoes: document.getElementById('formObservacoes').value,
+        status: document.getElementById('formStatus').value,
+        pagamento: document.getElementById('formPagamento').checked,
+        criadoEm: new Date().toISOString()
+      };
+
+      if (!item.data) {
+        alert('Informe a data.');
+        return;
+      }
+      if (!item.titulo) {
+        alert('Informe a atividade.');
+        return;
+      }
+
+      const idx = atividades.findIndex(a => a.id === item.id);
+      if (idx >= 0) {
+        item.criadoEm = atividades[idx].criadoEm || item.criadoEm;
+        atividades[idx] = item;
+      } else {
+        atividades.push(item);
+      }
+
+      salvarStorage();
+      popularFiltros();
+      atualizarResumo();
+      renderizarCalendario();
+      fecharModal();
+    }
+
+    function duplicarAtividade() {
+      const titulo = document.getElementById('formTitulo').value.trim();
+      if (!titulo) {
+        alert('Digite ou abra uma atividade para duplicar.');
+        return;
+      }
+      editandoId = null;
+      document.getElementById('modalTitle').textContent = 'Duplicar atividade';
+      document.getElementById('formTitulo').value = titulo + ' - cópia';
+    }
+
+    function adicionarMesPreservandoDiaUtil(dataIso, qtdMeses = 1) {
+      if (!dataIso) return hojeIso();
+      const [ano, mes, dia] = dataIso.split('-').map(Number);
+      const data = new Date(ano, mes - 1 + qtdMeses, dia);
+      if (data.getDate() !== dia) {
+        data.setDate(0);
+      }
+      return proximoDiaUtil(toIso(data));
+    }
+
+    function adicionarDiasUteis(dataIso, qtdDias = 1) {
+      if (!dataIso) return hojeIso();
+      const [ano, mes, dia] = dataIso.split('-').map(Number);
+      const data = new Date(ano, mes - 1, dia);
+      data.setDate(data.getDate() + qtdDias);
+      return proximoDiaUtil(toIso(data));
+    }
+
+    function moverParaProximoDia() {
+      const dataAtual = document.getElementById('formData').value;
+      if (!dataAtual) {
+        alert('Informe a data da atividade.');
+        return;
+      }
+      document.getElementById('formData').value = adicionarDiasUteis(dataAtual, 1);
+    }
+
+    function moverParaMesSeguinte() {
+      const dataAtual = document.getElementById('formData').value;
+      if (!dataAtual) {
+        alert('Informe a data da atividade.');
+        return;
+      }
+      document.getElementById('formData').value = adicionarMesPreservandoDiaUtil(dataAtual, 1);
+    }
+
+    function executarMoverDiaParaDataEscolhida() {
+      const dataOrigem = document.getElementById('moverDiaOrigem').value;
+      const dataDestinoInformada = document.getElementById('moverDiaDestino').value;
+      const ajustarDiaUtil = document.getElementById('moverDiaAjustarUtil').checked;
+
+      if (!dataOrigem) {
+        alert('Informe o dia de origem.');
+        return;
+      }
+
+      if (!dataDestinoInformada) {
+        alert('Informe o dia de destino.');
+        return;
+      }
+
+      if (dataOrigem === dataDestinoInformada) {
+        alert('Origem e destino não podem ser iguais.');
+        return;
+      }
+
+      const atividadesDoDia = atividades.filter(a => a.data === dataOrigem);
+
+      if (!atividadesDoDia.length) {
+        alert('Não há atividades nesse dia para mover.');
+        return;
+      }
+
+      const dataDestino = ajustarDiaUtil ? proximoDiaUtil(dataDestinoInformada) : dataDestinoInformada;
+
+      if (!confirm(`Deseja mover ${atividadesDoDia.length} atividade(s) de ${dataOrigem} para ${dataDestino}?`)) {
+        return;
+      }
+
+      let alteradas = 0;
+
+      atividades = atividades.map(a => {
+        if (a.data === dataOrigem) {
+          alteradas += 1;
+          return { ...a, data: dataDestino };
+        }
+        return a;
+      });
+
+      salvarStorage();
+      popularFiltros();
+      atualizarResumo();
+      renderizarCalendario();
+      fecharModalMoverDia();
+
+      alert(`${alteradas} atividade(s) movida(s) para ${dataDestino}.`);
+    }
+
+    function excluirAtividadeAtual() {
+      if (!editandoId) {
+        alert('Abra uma atividade existente para excluir.');
+        return;
+      }
+      if (!confirm('Deseja excluir esta atividade?')) return;
+      atividades = atividades.filter(a => a.id !== editandoId);
+      salvarStorage();
+      popularFiltros();
+      atualizarResumo();
+      renderizarCalendario();
+      fecharModal();
+    }
+
+    function renderizarCalendario() {
+      atualizarResumo();
+      const base = filtrarAtividades();
+      const primeiroDia = new Date(anoAtual, mesAtual, 1);
+      const ultimoDia = new Date(anoAtual, mesAtual + 1, 0);
+      const diasNoMes = ultimoDia.getDate();
+      const inicioSemana = primeiroDia.getDay();
+      const hoje = new Date();
+      const diasSemana = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+
+      document.getElementById('monthTitle').textContent = primeiroDia.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+
+      const mapaDias = {};
+      for (let dia = 1; dia <= diasNoMes; dia++) {
+        const iso = toIso(new Date(anoAtual, mesAtual, dia));
+        mapaDias[iso] = [];
+      }
+
+      base.forEach(a => {
+        if (mapaDias[a.data]) mapaDias[a.data].push(a);
+      });
+
+      Object.keys(mapaDias).forEach(data => {
+        mapaDias[data].sort((a, b) => (a.titulo || '').localeCompare(b.titulo || '', 'pt-BR'));
+      });
+
+      let html = '';
+      diasSemana.forEach((d, idx) => {
+        html += `<div class="weekday ${idx === 0 || idx === 6 ? 'weekend' : ''}">${d}</div>`;
+      });
+
+      for (let i = 0; i < inicioSemana; i++) {
+        html += '<div class="day empty"></div>';
+      }
+
+      for (let dia = 1; dia <= diasNoMes; dia++) {
+        const dataObj = new Date(anoAtual, mesAtual, dia);
+        const iso = toIso(dataObj);
+        const itens = mapaDias[iso] || [];
+        const isToday = hoje.getFullYear() === anoAtual && hoje.getMonth() === mesAtual && hoje.getDate() === dia;
+        const isWeekend = dataObj.getDay() === 0 || dataObj.getDay() === 6;
+        const isPayday = itens.some(item => item.pagamento);
+
+        html += `
+          <div class="day ${isToday ? 'today' : ''} ${isWeekend ? 'weekend' : ''} ${isPayday ? 'payday' : ''}">
+            <div class="day-header">
+              <span>${dia}</span>
+              <span class="day-count">${itens.length}</span>
+            </div>
+            <div class="day-body">
+              <div class="task-list">
+                ${itens.length ? itens.map(item => `
+                  <div class="task ${item.status}" onclick="abrirModal('${item.data}', '${item.id}')" title="Clique para editar">
+                    <strong>${escapeHtml(item.titulo)}</strong><br>
+                    <span>${escapeHtml(item.responsavel || '-')}</span><br>
+                    <span>${escapeHtml(statusLabel(item.status))}</span>
+                    ${item.pagamento ? '<br><span class="badge-payday">Pagamento</span>' : ''}
+                  </div>
+                `).join('') : '<div class="empty-text">Sem atividades</div>'}
+              </div>
+              <div class="mini-actions">
+                <button type="button" onclick="abrirModal('${iso}')">Adicionar</button>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+
+      document.getElementById('calendarGrid').innerHTML = html;
+    }
+
+    function exportarJSON() {
+      const blob = new Blob([JSON.stringify(atividades, null, 2)], { type: 'application/json;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'calendario_operacional_rh.json';
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function exportarExcel() {
+      const linhas = atividades.map(a => ({
+        Data: a.data,
+        Atividade: a.titulo,
+        Responsavel: a.responsavel,
+        Categoria: a.categoria,
+        Status: statusLabel(a.status),
+        Pagamento: a.pagamento ? 'Sim' : 'Não',
+        Observacoes: a.observacoes,
+        CriadoEm: a.criadoEm
+      }));
+      const ws = XLSX.utils.json_to_sheet(linhas);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'Calendario');
+      XLSX.writeFile(wb, 'Calendario_Operacional_RH.xlsx');
+    }
+
+    function proximoDiaUtil(dataIso) {
+      if (!dataIso) return dataIso;
+      const [ano, mes, dia] = dataIso.split('-').map(Number);
+      const data = new Date(ano, mes - 1, dia);
+      const ds = data.getDay();
+      if (ds === 6) data.setDate(data.getDate() + 2);
+      if (ds === 0) data.setDate(data.getDate() + 1);
+      return toIso(data);
+    }
+
+    function ajustarDatasParaDiasUteis() {
+      let alteradas = 0;
+      atividades = atividades.map(a => {
+        const novaData = proximoDiaUtil(a.data);
+        if (novaData !== a.data) {
+          alteradas += 1;
+          return { ...a, data: novaData };
+        }
+        return a;
+      });
+      salvarStorage();
+      renderizarCalendario();
+      alert(alteradas ? `${alteradas} atividade(s) ajustada(s) para dia útil.` : 'Nenhuma atividade em fim de semana.');
+    }
+
+    function resetarStatuses() {
+      if (!atividades.length) {
+        alert('Não há atividades para resetar.');
+        return;
+      }
+      atividades = atividades.map(a => ({ ...a, status: 'todo' }));
+      salvarStorage();
+      renderizarCalendario();
+      alert('Todas as atividades voltaram para A Fazer.');
+    }
+
+    function enviarAtividadesConcluidasParaMesSeguinte() {
+      const concluidas = atividades.filter(a => a.status === 'done');
+      if (!concluidas.length) {
+        alert('Não há atividades concluídas para enviar ao mês seguinte.');
+        return;
+      }
+      const novas = concluidas.map(a => ({
+        ...a,
+        id: uid(),
+        data: adicionarMesPreservandoDiaUtil(a.data, 1),
+        status: 'todo',
+        criadoEm: new Date().toISOString()
+      }));
+      atividades = atividades.concat(novas);
+      salvarStorage();
+      popularFiltros();
+      renderizarCalendario();
+      alert(`${novas.length} atividade(s) replicada(s) para o mês seguinte.`);
+    }
+
+    function aplicarResponsavelEmMassa() {
+      const nome = document.getElementById('responsavelMassa').value.trim();
+      if (!nome) {
+        alert('Digite o responsável em massa.');
+        return;
+      }
+      if (!atividades.length) {
+        alert('Não há atividades para atualizar.');
+        return;
+      }
+      atividades = atividades.map(a => ({ ...a, responsavel: nome }));
+      salvarStorage();
+      popularFiltros();
+      renderizarCalendario();
+      alert('Responsável aplicado em todas as atividades.');
+    }
+
+    function limparTudo() {
+      if (!confirm('Deseja apagar todas as atividades?')) return;
+      atividades = [];
+      salvarStorage();
+      popularFiltros();
+      renderizarCalendario();
+      fecharModal();
+    }
+
+    document.getElementById('inputImportarJson').addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      try {
+        const texto = await file.text();
+        const json = JSON.parse(texto);
+        if (!Array.isArray(json)) throw new Error('Formato inválido');
+        atividades = json.map((item, indice) => normalizarImportacao(item, indice));
+        salvarStorage();
+        popularFiltros();
+        renderizarCalendario();
+        alert(`Importação concluída com sucesso. ${atividades.length} atividade(s) carregada(s).`);
+      } catch (err) {
+        console.error(err);
+        alert('Não foi possível importar o JSON. Verifique o formato do arquivo.');
+      } finally {
+        e.target.value = '';
+      }
+    });
+
+    document.getElementById('modalBackdrop').addEventListener('click', (e) => {
+      if (e.target.id === 'modalBackdrop') fecharModal();
+    });
+
+    document.getElementById('modalMoverDiaBackdrop').addEventListener('click', (e) => {
+      if (e.target.id === 'modalMoverDiaBackdrop') fecharModalMoverDia();
+    });
+
+    carregarStorage();
+    popularFiltros();
+    renderizarCalendario();
+  </script>
+</body>
+</html>
