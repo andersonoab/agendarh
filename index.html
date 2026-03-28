@@ -83,7 +83,10 @@
     .summary-card,
     .day,
     .task,
-    .modal {
+    .modal,
+    .tab-btn,
+    .agenda-day-block,
+    .agenda-item {
       transition: var(--transition);
     }
 
@@ -241,7 +244,43 @@
       outline: none;
     }
 
-    .calendar-toolbar {
+    .tabs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 18px;
+      flex-wrap: wrap;
+    }
+
+    .tab-btn {
+      background: #eef4ff;
+      color: var(--navy);
+      border: 1px solid var(--line);
+      box-shadow: none;
+    }
+
+    .tab-btn:hover {
+      background: #e2ecff;
+      color: var(--navy);
+      border-color: #bfd0ea;
+    }
+
+    .tab-btn.active {
+      background: linear-gradient(90deg, var(--navy), var(--navy-2));
+      color: #fff;
+      border-color: transparent;
+      box-shadow: 0 8px 18px rgba(18, 28, 78, 0.14);
+    }
+
+    .page {
+      display: none;
+    }
+
+    .page.active {
+      display: block;
+    }
+
+    .calendar-toolbar,
+    .agenda-toolbar {
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -250,7 +289,8 @@
       flex-wrap: wrap;
     }
 
-    .month-title {
+    .month-title,
+    .agenda-title {
       margin: 0;
       color: var(--navy);
       text-transform: capitalize;
@@ -259,7 +299,8 @@
       letter-spacing: 0.2px;
     }
 
-    .calendar-toolbar > div {
+    .calendar-toolbar > div,
+    .agenda-toolbar > div {
       color: var(--text-3);
       font-weight: 700;
       font-size: 13px;
@@ -380,20 +421,24 @@
       padding-right: 2px;
     }
 
-    .task-list::-webkit-scrollbar {
+    .task-list::-webkit-scrollbar,
+    .agenda-list::-webkit-scrollbar {
       width: 8px;
     }
 
-    .task-list::-webkit-scrollbar-thumb {
+    .task-list::-webkit-scrollbar-thumb,
+    .agenda-list::-webkit-scrollbar-thumb {
       background: #cbd5e1;
       border-radius: 999px;
     }
 
-    .task-list::-webkit-scrollbar-track {
+    .task-list::-webkit-scrollbar-track,
+    .agenda-list::-webkit-scrollbar-track {
       background: transparent;
     }
 
-    .task {
+    .task,
+    .agenda-item {
       border-radius: var(--radius-xs);
       border: 1px solid var(--line);
       padding: 8px 9px;
@@ -405,24 +450,27 @@
       box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
     }
 
-    .task:hover {
+    .task:hover,
+    .agenda-item:hover {
       transform: translateY(-1px);
       box-shadow: 0 6px 12px rgba(15, 23, 42, 0.08);
       border-color: #bfd0ea;
     }
 
-    .task strong {
+    .task strong,
+    .agenda-item strong {
       display: inline-block;
       margin-bottom: 2px;
       color: #0f172a;
     }
 
-    .task.todo { background: var(--todo); }
-    .task.doing { background: var(--doing); }
-    .task.done { background: var(--done); }
-    .task.late { background: var(--late); }
+    .task.todo, .agenda-item.todo { background: var(--todo); }
+    .task.doing, .agenda-item.doing { background: var(--doing); }
+    .task.done, .agenda-item.done { background: var(--done); }
+    .task.late, .agenda-item.late { background: var(--late); }
 
-    .task .badge-payday {
+    .task .badge-payday,
+    .agenda-item .badge-payday {
       display: inline-block;
       margin-top: 4px;
       padding: 2px 6px;
@@ -435,7 +483,8 @@
       letter-spacing: 0.3px;
     }
 
-    .mini-actions {
+    .mini-actions,
+    .agenda-actions {
       display: flex;
       gap: 6px;
       flex-wrap: wrap;
@@ -443,7 +492,9 @@
       padding-top: 4px;
     }
 
-    .mini-actions button {
+    .mini-actions button,
+    .agenda-actions button,
+    .agenda-toolbar button {
       padding: 7px 9px;
       font-size: 12px;
       border-radius: 10px;
@@ -453,17 +504,127 @@
       box-shadow: none;
     }
 
-    .mini-actions button:hover {
+    .mini-actions button:hover,
+    .agenda-actions button:hover,
+    .agenda-toolbar button:hover {
       background: #e2ecff;
       color: var(--navy);
       border-color: #bfd0ea;
     }
 
-    .empty-text {
+    .empty-text,
+    .agenda-empty {
       color: var(--text-3);
       font-size: 12px;
       text-align: center;
       padding: 12px 0;
+    }
+
+    .agenda-wrap {
+      display: grid;
+      gap: 14px;
+    }
+
+    .agenda-day-block {
+      background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-sm);
+      overflow: hidden;
+    }
+
+    .agenda-day-block:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+      border-color: var(--line-strong);
+    }
+
+    .agenda-day-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 16px;
+      background: linear-gradient(180deg, #f9fbff 0%, #f2f6fd 100%);
+      border-bottom: 1px solid var(--line);
+      flex-wrap: wrap;
+    }
+
+    .agenda-day-header.payday {
+      background: linear-gradient(180deg, var(--payday-header) 0%, #edf4ff 100%);
+      color: var(--payday-text);
+    }
+
+    .agenda-day-title {
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--navy);
+    }
+
+    .agenda-day-meta {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .agenda-pill {
+      background: #fff;
+      border: 1px solid var(--line);
+      color: var(--text-2);
+      border-radius: 999px;
+      padding: 4px 10px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .agenda-list {
+      padding: 14px;
+      display: grid;
+      gap: 10px;
+      max-height: 520px;
+      overflow: auto;
+    }
+
+    .agenda-item-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .agenda-owner {
+      font-size: 12px;
+      color: var(--text-2);
+      font-weight: 700;
+      margin-top: 4px;
+    }
+
+    .agenda-meta {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-top: 6px;
+    }
+
+    .agenda-tag {
+      display: inline-flex;
+      align-items: center;
+      border-radius: 999px;
+      padding: 3px 8px;
+      font-size: 11px;
+      font-weight: 700;
+      background: rgba(255,255,255,0.75);
+      border: 1px solid rgba(15,23,42,0.08);
+      color: var(--text-2);
+    }
+
+    .agenda-observacoes {
+      margin-top: 8px;
+      color: var(--text-2);
+      font-size: 12px;
+      white-space: pre-wrap;
     }
 
     .modal-backdrop {
@@ -624,7 +785,8 @@
         padding: 16px;
       }
 
-      .month-title {
+      .month-title,
+      .agenda-title {
         font-size: 22px;
       }
 
@@ -638,7 +800,7 @@
   <div class="topbar">
     <div>
       <h1>Calendário Operacional RH</h1>
-      <small>Uma única página para escrever, visualizar e editar as atividades do mês</small>
+      <small>Uma única base com calendário mensal e uma segunda página para listar as atividades por dia</small>
     </div>
     <div class="toolbar">
       <label class="file-label" for="inputImportarJson">Importar JSON</label>
@@ -657,21 +819,37 @@
     <div class="summary" id="summary"></div>
 
     <div class="controls">
-      <input id="filtroBusca" type="text" placeholder="Buscar atividade, responsável, observação..." oninput="renderizarCalendario()" />
-      <select id="filtroResponsavel" onchange="renderizarCalendario()"></select>
-      <select id="filtroStatus" onchange="renderizarCalendario()"></select>
+      <input id="filtroBusca" type="text" placeholder="Buscar atividade, responsável, observação..." oninput="renderizarTudo()" />
+      <select id="filtroResponsavel" onchange="renderizarTudo()"></select>
+      <select id="filtroStatus" onchange="renderizarTudo()"></select>
       <input id="responsavelMassa" type="text" placeholder="Responsável em massa" />
       <button type="button" onclick="aplicarResponsavelEmMassa()">Aplicar responsável</button>
       <button type="button" onclick="mudarMes(-1)">Mês anterior</button>
       <button type="button" onclick="mudarMes(1)">Próximo mês</button>
     </div>
 
-    <div class="calendar-toolbar">
-      <h2 class="month-title" id="monthTitle"></h2>
-      <div>Clique no dia para criar. Clique na atividade para editar.</div>
+    <div class="tabs">
+      <button type="button" class="tab-btn active" id="tabCalendario" onclick="trocarPagina('calendario')">Calendário</button>
+      <button type="button" class="tab-btn" id="tabAgenda" onclick="trocarPagina('agenda')">Atividades por dia</button>
     </div>
 
-    <div class="calendar-grid" id="calendarGrid"></div>
+    <div class="page active" id="pageCalendario">
+      <div class="calendar-toolbar">
+        <h2 class="month-title" id="monthTitle"></h2>
+        <div>Clique no dia para criar. Clique na atividade para editar.</div>
+      </div>
+      <div class="calendar-grid" id="calendarGrid"></div>
+    </div>
+
+    <div class="page" id="pageAgenda">
+      <div class="agenda-toolbar">
+        <h2 class="agenda-title" id="agendaTitle"></h2>
+        <div>
+          Nesta página ficam todas as atividades do mês agrupadas por dia, com owner, link para o calendário e edição rápida.
+        </div>
+      </div>
+      <div class="agenda-wrap" id="agendaWrap"></div>
+    </div>
 
     <div class="footer-note">Anderson Marinho | Igarapé Digital</div>
   </div>
@@ -771,11 +949,12 @@
   </div>
 
   <script>
-    const STORAGE_KEY = 'calendario_operacional_rh_v1';
+    const STORAGE_KEY = 'calendario_operacional_rh_v2';
     let atividades = [];
     let mesAtual = new Date().getMonth();
     let anoAtual = new Date().getFullYear();
     let editandoId = null;
+    let paginaAtual = 'calendario';
 
     function uid() {
       return 'ATV-' + Date.now() + '-' + Math.floor(Math.random() * 100000);
@@ -796,6 +975,18 @@
         .replaceAll('>', '&gt;')
         .replaceAll('"', '&quot;')
         .replaceAll("'", '&#039;');
+    }
+
+    function formatarDataPt(dataIso) {
+      if (!dataIso) return '';
+      const [ano, mes, dia] = dataIso.split('-').map(Number);
+      const data = new Date(ano, mes - 1, dia);
+      return data.toLocaleDateString('pt-BR', {
+        weekday: 'long',
+        day: '2-digit',
+        month: 'long',
+        year: 'numeric'
+      });
     }
 
     function carregarStorage() {
@@ -825,7 +1016,7 @@
         id: item.id || ('IMP-' + Date.now() + '-' + indice),
         data: item.data || item.prazo || hojeIso(),
         titulo: item.titulo || item.atividade || 'Atividade sem nome',
-        responsavel: item.responsavel || '',
+        responsavel: item.responsavel || item.owner || '',
         categoria: item.categoria || item.macroprocesso || '',
         observacoes: item.observacoes || item.risco || item.evidencia || '',
         status: ['todo', 'doing', 'done', 'late'].includes(status) ? status : 'todo',
@@ -896,6 +1087,22 @@
       });
     }
 
+    function filtrarAtividadesDoMes() {
+      return filtrarAtividades().filter(a => {
+        if (!a.data) return false;
+        const [ano, mes] = a.data.split('-').map(Number);
+        return ano === anoAtual && (mes - 1) === mesAtual;
+      });
+    }
+
+    function trocarPagina(pagina) {
+      paginaAtual = pagina;
+      document.getElementById('pageCalendario').classList.toggle('active', pagina === 'calendario');
+      document.getElementById('pageAgenda').classList.toggle('active', pagina === 'agenda');
+      document.getElementById('tabCalendario').classList.toggle('active', pagina === 'calendario');
+      document.getElementById('tabAgenda').classList.toggle('active', pagina === 'agenda');
+    }
+
     function mudarMes(delta) {
       mesAtual += delta;
       if (mesAtual < 0) {
@@ -906,7 +1113,7 @@
         mesAtual = 0;
         anoAtual += 1;
       }
-      renderizarCalendario();
+      renderizarTudo();
     }
 
     function abrirModal(data = hojeIso(), id = null) {
@@ -976,8 +1183,7 @@
 
       salvarStorage();
       popularFiltros();
-      atualizarResumo();
-      renderizarCalendario();
+      renderizarTudo();
       fecharModal();
     }
 
@@ -1073,8 +1279,7 @@
 
       salvarStorage();
       popularFiltros();
-      atualizarResumo();
-      renderizarCalendario();
+      renderizarTudo();
       fecharModalMoverDia();
 
       alert(`${alteradas} atividade(s) movida(s) para ${dataDestino}.`);
@@ -1089,14 +1294,12 @@
       atividades = atividades.filter(a => a.id !== editandoId);
       salvarStorage();
       popularFiltros();
-      atualizarResumo();
-      renderizarCalendario();
+      renderizarTudo();
       fecharModal();
     }
 
     function renderizarCalendario() {
-      atualizarResumo();
-      const base = filtrarAtividades();
+      const base = filtrarAtividadesDoMes();
       const primeiroDia = new Date(anoAtual, mesAtual, 1);
       const ultimoDia = new Date(anoAtual, mesAtual + 1, 0);
       const diasNoMes = ultimoDia.getDate();
@@ -1138,7 +1341,7 @@
         const isPayday = itens.some(item => item.pagamento);
 
         html += `
-          <div class="day ${isToday ? 'today' : ''} ${isWeekend ? 'weekend' : ''} ${isPayday ? 'payday' : ''}">
+          <div class="day ${isToday ? 'today' : ''} ${isWeekend ? 'weekend' : ''} ${isPayday ? 'payday' : ''}" id="dia-${iso}">
             <div class="day-header">
               <span>${dia}</span>
               <span class="day-count">${itens.length}</span>
@@ -1165,6 +1368,90 @@
       document.getElementById('calendarGrid').innerHTML = html;
     }
 
+    function renderizarAgenda() {
+      const base = filtrarAtividadesDoMes().sort((a, b) => {
+        if (a.data !== b.data) return a.data.localeCompare(b.data);
+        return (a.titulo || '').localeCompare(b.titulo || '', 'pt-BR');
+      });
+
+      const primeiroDia = new Date(anoAtual, mesAtual, 1);
+      document.getElementById('agendaTitle').textContent = 'Agenda consolidada de ' + primeiroDia.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+
+      const wrap = document.getElementById('agendaWrap');
+
+      if (!base.length) {
+        wrap.innerHTML = '<div class="agenda-day-block"><div class="agenda-list"><div class="agenda-empty">Nenhuma atividade encontrada para este mês com os filtros atuais.</div></div></div>';
+        return;
+      }
+
+      const grupos = {};
+      base.forEach(item => {
+        if (!grupos[item.data]) grupos[item.data] = [];
+        grupos[item.data].push(item);
+      });
+
+      const html = Object.keys(grupos).sort().map(data => {
+        const itens = grupos[data];
+        const temPagamento = itens.some(item => item.pagamento);
+        return `
+          <section class="agenda-day-block" id="agenda-${data}">
+            <div class="agenda-day-header ${temPagamento ? 'payday' : ''}">
+              <div class="agenda-day-title">${escapeHtml(formatarDataPt(data))}</div>
+              <div class="agenda-day-meta">
+                <span class="agenda-pill">${itens.length} atividade(s)</span>
+                ${temPagamento ? '<span class="agenda-pill">Dia marcado como pagamento</span>' : ''}
+                <button type="button" onclick="irParaDataNoCalendario('${data}')">Ver no calendário</button>
+                <button type="button" onclick="abrirModal('${data}')">Adicionar</button>
+              </div>
+            </div>
+            <div class="agenda-list">
+              ${itens.map(item => `
+                <article class="agenda-item ${item.status}">
+                  <div class="agenda-item-top">
+                    <div>
+                      <strong>${escapeHtml(item.titulo)}</strong>
+                      <div class="agenda-owner">Owner: ${escapeHtml(item.responsavel || '-')}</div>
+                    </div>
+                    <div class="agenda-actions">
+                      <button type="button" onclick="irParaDataNoCalendario('${item.data}', '${item.id}')">Link</button>
+                      <button type="button" onclick="abrirModal('${item.data}', '${item.id}')">Editar</button>
+                    </div>
+                  </div>
+                  <div class="agenda-meta">
+                    <span class="agenda-tag">${escapeHtml(statusLabel(item.status))}</span>
+                    <span class="agenda-tag">Categoria: ${escapeHtml(item.categoria || '-')}</span>
+                    ${item.pagamento ? '<span class="badge-payday">Pagamento</span>' : ''}
+                  </div>
+                  ${item.observacoes ? `<div class="agenda-observacoes">${escapeHtml(item.observacoes)}</div>` : ''}
+                </article>
+              `).join('')}
+            </div>
+          </section>
+        `;
+      }).join('');
+
+      wrap.innerHTML = html;
+    }
+
+    function irParaDataNoCalendario(dataIso, id = null) {
+      if (!dataIso) return;
+      const [ano, mes] = dataIso.split('-').map(Number);
+      anoAtual = ano;
+      mesAtual = mes - 1;
+      trocarPagina('calendario');
+      renderizarTudo();
+
+      setTimeout(() => {
+        const alvo = document.getElementById('dia-' + dataIso);
+        if (alvo) {
+          alvo.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+        if (id) {
+          setTimeout(() => abrirModal(dataIso, id), 180);
+        }
+      }, 80);
+    }
+
     function exportarJSON() {
       const blob = new Blob([JSON.stringify(atividades, null, 2)], { type: 'application/json;charset=utf-8' });
       const url = URL.createObjectURL(blob);
@@ -1179,7 +1466,7 @@
       const linhas = atividades.map(a => ({
         Data: a.data,
         Atividade: a.titulo,
-        Responsavel: a.responsavel,
+        Owner: a.responsavel,
         Categoria: a.categoria,
         Status: statusLabel(a.status),
         Pagamento: a.pagamento ? 'Sim' : 'Não',
@@ -1213,7 +1500,7 @@
         return a;
       });
       salvarStorage();
-      renderizarCalendario();
+      renderizarTudo();
       alert(alteradas ? `${alteradas} atividade(s) ajustada(s) para dia útil.` : 'Nenhuma atividade em fim de semana.');
     }
 
@@ -1224,7 +1511,7 @@
       }
       atividades = atividades.map(a => ({ ...a, status: 'todo' }));
       salvarStorage();
-      renderizarCalendario();
+      renderizarTudo();
       alert('Todas as atividades voltaram para A Fazer.');
     }
 
@@ -1244,7 +1531,7 @@
       atividades = atividades.concat(novas);
       salvarStorage();
       popularFiltros();
-      renderizarCalendario();
+      renderizarTudo();
       alert(`${novas.length} atividade(s) replicada(s) para o mês seguinte.`);
     }
 
@@ -1261,7 +1548,7 @@
       atividades = atividades.map(a => ({ ...a, responsavel: nome }));
       salvarStorage();
       popularFiltros();
-      renderizarCalendario();
+      renderizarTudo();
       alert('Responsável aplicado em todas as atividades.');
     }
 
@@ -1270,8 +1557,14 @@
       atividades = [];
       salvarStorage();
       popularFiltros();
-      renderizarCalendario();
+      renderizarTudo();
       fecharModal();
+    }
+
+    function renderizarTudo() {
+      atualizarResumo();
+      renderizarCalendario();
+      renderizarAgenda();
     }
 
     document.getElementById('inputImportarJson').addEventListener('change', async (e) => {
@@ -1284,7 +1577,7 @@
         atividades = json.map((item, indice) => normalizarImportacao(item, indice));
         salvarStorage();
         popularFiltros();
-        renderizarCalendario();
+        renderizarTudo();
         alert(`Importação concluída com sucesso. ${atividades.length} atividade(s) carregada(s).`);
       } catch (err) {
         console.error(err);
@@ -1304,7 +1597,7 @@
 
     carregarStorage();
     popularFiltros();
-    renderizarCalendario();
+    renderizarTudo();
   </script>
 </body>
 </html>
