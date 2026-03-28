@@ -1587,8 +1587,36 @@
       }
     });
 
+    // controle de alteração no formulário
+    let formDirty = false;
+
+    const camposForm = ['formData','formTitulo','formResponsavel','formCategoria','formObservacoes','formStatus','formPagamento'];
+    camposForm.forEach(id => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.addEventListener('change', () => formDirty = true);
+      el.addEventListener('input', () => formDirty = true);
+    });
+
+    function confirmarFechamentoModal() {
+      if (!formDirty) return true;
+      return confirm('Você tem alterações não salvas. Deseja sair mesmo assim?');
+    }
+
+    // sobrescreve fecharModal para validar
+    const _fecharModalOriginal = fecharModal;
+    fecharModal = function() {
+      if (!confirmarFechamentoModal()) return;
+      formDirty = false;
+      _fecharModalOriginal();
+    };
+
     document.getElementById('modalBackdrop').addEventListener('click', (e) => {
-      if (e.target.id === 'modalBackdrop') fecharModal();
+      if (e.target.id === 'modalBackdrop') {
+        if (!confirmarFechamentoModal()) return;
+        formDirty = false;
+        _fecharModalOriginal();
+      }
     });
 
     document.getElementById('modalMoverDiaBackdrop').addEventListener('click', (e) => {
